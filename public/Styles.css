@@ -68,6 +68,29 @@ input:not([type="checkbox"]), textarea {
     font-size: 0.9em;
 }
 
+/* Botão Outline */
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.6);
+    color: var(--text-color);
+    padding: 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all .2s;
+}
+.btn-outline:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+/* Botão Pequeno */
+.btn-sm {
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    width: auto;
+}
+
 /* Estilos do Dashboard */
 .dashboard-header {
     padding: 20px 40px;
@@ -82,6 +105,64 @@ input:not([type="checkbox"]), textarea {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     padding: 20px 40px;
+}
+
+/* Ações de Tarefas */
+.task-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.task-actions button {
+    background: transparent;
+    border: 1px solid #6a11cb;
+    color: #6a11cb;
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all .2s;
+    font-weight: 600;
+}
+.task-actions button:hover {
+    background: #6a11cb;
+    color: white;
+}
+.task-actions .task-delete {
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+}
+.task-actions .task-delete:hover {
+    background: #ff4d4d;
+    color: white;
+}
+.task-actions .task-complete {
+    border-color: #25fc7f;
+    color: #25fc7f;
+}
+.task-actions .task-complete:hover {
+    background: #25fc7f;
+    color: #062b10;
+}
+
+/* Badge de Tarefa Concluída */
+.badge-completed {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #25fc7f;
+    color: #062b10;
+    border-radius: 14px;
+    font-size: 0.75em;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+/* Rodapé da Tarefa */
+.task-footer {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Responsividade Básica */

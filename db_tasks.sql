@@ -1,18 +1,60 @@
 -- Arquivo: db_tasks.sql
 -- Conexão: Usuário 'root' / Senha 'root'
 
--- Criação do Banco de Dados
 CREATE DATABASE IF NOT EXISTS db_integrador;
 USE db_integrador;
 
--- Tabela de Usuários (Requisitos: Autenticação, Hash de Senha)
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL, -- Armazena a senha com hash
-    full_name VARCHAR(150),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+/* Modelo relacional SQL removido para uso do MongoDB */
+
+--- ZenList - Modelo MongoDB ---
+
+-- Coleção de Usuários
+{
+    _id: ObjectId,
+    username: String,
+    password: String, // hash
+    email: String
+}
+
+-- Coleção de Tarefas
+{
+    _id: ObjectId,
+    userId: ObjectId, // referência ao usuário
+    title: String,
+    description: String,
+    status: String, // "pendente", "concluída"
+    createdAt: Date
+}
+
+-- Exemplos de comandos MongoDB
+
+// Inserir usuário
+ db.users.insertOne({
+     username: "usuario1",
+     password: "<hash>",
+     email: "usuario1@email.com"
+ })
+
+// Inserir tarefa
+ db.tasks.insertOne({
+     userId: ObjectId("..."),
+     title: "Estudar para prova",
+     description: "Revisar capítulos 1 a 5",
+     status: "pendente",
+     createdAt: new Date()
+ })
+
+// Buscar tarefas de um usuário
+ db.tasks.find({ userId: ObjectId("...") })
+
+// Atualizar status de tarefa
+ db.tasks.updateOne(
+     { _id: ObjectId("...") },
+     { $set: { status: "concluída" } }
+ )
+
+// Remover tarefa
+ db.tasks.deleteOne({ _id: ObjectId("...") })
 
 -- Tabela de Tarefas (Requisitos: CRUD)
 CREATE TABLE tasks (

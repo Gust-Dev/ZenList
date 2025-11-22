@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Projeto Integrador</title>
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="Styles.css">
 </head>
 <body>
     <div class="auth-container">
         <div class="card" style="width: 320px;">
             <h2 style="text-align: center; color: white;">Acesso ao Sistema</h2>
-            <form onsubmit="handleLogin(event)">
+            <form id="loginForm">
                 <input type="email" name="email" placeholder="Email ID" required>
                 <input type="password" name="password" placeholder="Password" required>
 
@@ -27,22 +27,6 @@
             </p>
         </div>
     </div>
-    <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-            const form = event.target;
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: form.email.value, password: form.password.value })
-            });
-
-            if (response.ok) {
-                window.location.href = '/dashboard'; // Redireciona para a rota protegida
-            } else {
-                alert('Falha no Login. Verifique as credenciais.');
-            }
-        }
-    </script>
+    <script src="login.js"></script>
 </body>
 </html>

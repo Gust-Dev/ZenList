@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Sistema de Gestão de Tarefas</title>
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="Styles.css"> 
     <style>
         /* Estilos do Modal */
         .modal {
@@ -23,14 +23,6 @@
             width: 80%;
             max-width: 500px;
         }
-        .btn-logout {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
         .status-completed { color: #25fc7f; }
         .status-pending { color: #fceb25; }
         
@@ -44,10 +36,13 @@
 <body>
 
     <div class="dashboard-header">
-        <h1 style="margin: 0;">Minhas Tarefas</h1>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="openTaskModal()" class="btn-primary" style="width: auto; padding: 10px 20px;">+ Nova Tarefa</button>
-            <button onclick="logout()" class="btn-logout">Sair</button>
+        <div>
+            <h1 style="margin: 0;">Minhas Tarefas</h1>
+            <p id="userGreeting" style="margin: 4px 0 0; font-size: 0.9em; opacity: 0.8;">Carregando usuário...</p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="newTaskButton" class="btn-primary btn-sm">+ Nova Tarefa</button>
+            <button id="logoutButton" class="btn-outline btn-sm">Sair</button>
         </div>
     </div>
 
@@ -58,162 +53,19 @@
     <div id="taskModal" class="modal">
         <div class="card modal-content">
             <h2 id="modalTitle">Criar Nova Tarefa</h2>
-            <form id="taskForm" onsubmit="handleTaskSubmit(event)">
+            <form id="taskForm">
                 <input type="hidden" id="taskId" name="id">
 
                 <input type="text" id="taskTitle" name="title" placeholder="Título da Tarefa" required>
                 <textarea id="taskDescription" name="description" placeholder="Descrição da Tarefa"></textarea>
                 
-                <div id="statusField" style="margin-bottom: 25px; display: none;">
-                    <label for="taskStatus">Status:</label>
-                    <select id="taskStatus" name="status" style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(255, 255, 255, 0.2); color: white;">
-                        <option value="pending" style="color: black;">Pendente</option>
-                        <option value="completed" style="color: black;">Concluída</option>
-                    </select>
-                </div>
-
                 <button type="submit" class="btn-primary" id="submitButton">Criar</button>
-                <button type="button" onclick="closeTaskModal()" class="btn-logout" style="width: 100%; margin-top: 10px;">Cancelar</button>
+                <button type="button" id="cancelTaskButton" class="btn-outline" style="width: 100%; margin-top: 10px;">Cancelar</button>
             </form>
         </div>
     </div>
 
-    <script>
-        const taskList = document.getElementById('taskList');
-        const taskModal = document.getElementById('taskModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const statusField = document.getElementById('statusField');
-        const submitButton = document.getElementById('submitButton');
-
-        window.onclick = function(event) {
-            if (event.target == taskModal) { closeTaskModal(); }
-        }
-
-        // --- RENDERIZAÇÃO (CORREÇÃO DE ID) ---
-        function renderTask(task) {
-            const statusClass = task.status === 'completed' ? 'status-completed' : 'status-pending';
-            const statusText = task.status === 'completed' ? 'CONCLUÍDA' : 'PENDENTE';
-            
-            return `
-                <div class="task-item card" data-id="${task.id}">
-                    <div>
-                        <h3 style="margin-top: 0;">${task.title}</h3>
-                        <p style="opacity: 0.8;">${task.description || 'Sem descrição.'}</p>
-                    </div>
-                    <div>
-                        <p class="task-status ${statusClass}">Status: <strong>${statusText}</strong></p>
-                        <div class="task-actions">
-                            <button onclick="openTaskModal('${task.id}', '${task.title.replace(/'/g, "\\'")}', '${task.description ? task.description.replace(/'/g, "\\'") : ''}', '${task.status}')">Editar</button>
-                            <button onclick="deleteTask('${task.id}')" style="border-color: #ff4d4d; color: #ff4d4d;">Apagar</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- CRUD: READ (Visualizar) ---
-        async function fetchTasks() {
-            const loadingMsg = document.getElementById('loading-msg');
-            loadingMsg.style.display = 'block';
-            taskList.innerHTML = '';
-            
-            const response = await fetch('/api/tasks');
-            
-            if (response.status === 401) {
-                 window.location.href = 'login.html'; 
-                 return;
-            }
-
-            const tasks = await response.json();
-            loadingMsg.style.display = 'none';
-
-            if (tasks.length === 0) {
-                taskList.innerHTML = '<h3 style="grid-column: 1 / -1; text-align: center;">Nenhuma tarefa encontrada. Crie uma!</h3>';
-                return;
-            }
-            tasks.forEach(task => {
-                taskList.innerHTML += renderTask(task);
-            });
-        }
-
-        // --- CRUD: CREATE/UPDATE (Submissão do Formulário) ---
-        async function handleTaskSubmit(event) {
-            event.preventDefault();
-            const id = document.getElementById('taskId').value;
-            const isEditing = !!id;
-            
-            const data = {
-                title: document.getElementById('taskTitle').value,
-                description: document.getElementById('taskDescription').value,
-                // Apenas envia o status se estiver em modo edição
-                ...(isEditing && { status: document.getElementById('taskStatus').value })
-            };
-            
-            const url = isEditing ? `/api/tasks/${id}` : '/api/tasks';
-            const method = isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                closeTaskModal();
-                fetchTasks();
-            } else {
-                alert(`Falha ao ${isEditing ? 'atualizar' : 'criar'} tarefa. Verifique o console.`);
-            }
-        }
-        
-        // --- CRUD: DELETE (Apagar) ---
-        async function deleteTask(id) {
-            if (!confirm('Tem certeza que deseja apagar esta tarefa?')) return;
-
-            const response = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-            
-            if (response.ok) {
-                fetchTasks();
-            } else {
-                alert('Falha ao apagar tarefa. Verifique o console.');
-            }
-        }
-
-        // --- FUNÇÕES MODAIS ---
-        function openTaskModal(id = '', title = '', description = '', status = 'pending') {
-            document.getElementById('taskForm').reset();
-            document.getElementById('taskId').value = id;
-
-            if (id) {
-                // Modo Edição
-                modalTitle.textContent = 'Editar Tarefa';
-                submitButton.textContent = 'Salvar Alterações';
-                statusField.style.display = 'block';
-                document.getElementById('taskTitle').value = title;
-                document.getElementById('taskDescription').value = description;
-                document.getElementById('taskStatus').value = status;
-            } else {
-                // Modo Criação
-                modalTitle.textContent = 'Criar Nova Tarefa';
-                submitButton.textContent = 'Criar';
-                statusField.style.display = 'none';
-            }
-            taskModal.style.display = 'block';
-        }
-
-        function closeTaskModal() {
-            taskModal.style.display = 'none';
-        }
-
-        // --- LOGOUT ---
-        function logout() {
-            // Remove o id da sessão (simulado no Front-end, o Back-end real limparia no servidor)
-            // e força o redirecionamento.
-            alert('Sessão encerrada. Redirecionando para o login.');
-            window.location.href = 'login.html'; 
-        }
-
-        window.onload = fetchTasks;
-    </script>
+        <script src="dashboard.js"></script>
 </body>
 </html>
+

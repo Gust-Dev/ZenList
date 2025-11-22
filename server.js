@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +18,7 @@ let db;
 async function connectToMongo() {
     try {
         await client.connect();
-        db = client.db('db_integrador');
+        db = client.db('zenlist');
 
         // Garante índice único no email
         await db.collection('users').createIndex({ email: 1 }, { unique: true });
@@ -30,7 +31,16 @@ async function connectToMongo() {
 }
 
 /* ------------------ Middlewares ------------------ */
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                "script-src": ["'self'"],
+                "style-src": ["'self'", "'unsafe-inline'"],
+            },
+        },
+    })
+);
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -121,6 +131,20 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Rota para obter dados do usuário logado
+app.get('/api/me', requireLogin, async (req, res) => {
+    try {
+        const user = await db.collection('users').findOne(
+            { _id: req.userObjectId },
+            { projection: { full_name: 1, email: 1 } }
+        );
+        if (!user) return res.status(404).json({ message: "Usuário não encontrado." });
+        res.json({ full_name: user.full_name, email: user.email });
+    } catch {
+        res.status(500).json({ message: "Erro ao obter usuário." });
+    }
+});
+
 // Listar tarefas
 app.get('/api/tasks', requireLogin, async (req, res) => {
     try {
@@ -164,6 +188,26 @@ app.post('/api/tasks', requireLogin, async (req, res) => {
         });
     } catch {
         res.status(500).json({ message: "Erro ao criar tarefa." });
+    }
+});
+
+// Marcar tarefa como concluída
+app.patch('/api/tasks/:id/complete', requireLogin, async (req, res) => {
+    const { id } = req.params;
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "ID inválido." });
+    }
+    try {
+        const result = await db.collection('tasks').updateOne(
+            { _id: new ObjectId(id), user_id: req.userObjectId },
+            { $set: { status: "completed" } }
+        );
+        if (!result.matchedCount) {
+            return res.status(404).json({ message: "Tarefa não encontrada." });
+        }
+        res.json({ success: true });
+    } catch {
+        res.status(500).json({ message: "Erro ao concluir tarefa." });
     }
 });
 
@@ -217,5 +261,10 @@ app.delete('/api/tasks/:id', requireLogin, async (req, res) => {
     }
 });
 
+app.get('/dashboard', requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
 /* ------------------ Start ------------------ */
 connectToMongo().then(() => app.listen(PORT));
+
