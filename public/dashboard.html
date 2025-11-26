@@ -37,19 +37,32 @@
 
     <div class="dashboard-header">
         <div>
+             
             <h1 style="margin: 0;">Minhas Tarefas</h1>
             <p id="userGreeting" style="margin: 4px 0 0; font-size: 0.9em; opacity: 0.8;">Carregando usuário...</p>
+            
         </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button id="newTaskButton" class="btn-primary btn-sm">+ Nova Tarefa</button>
-            <button id="logoutButton" class="btn-outline btn-sm">Sair</button>
-        </div>
+        
+        <div><button id="logoutButton" class="btn-outline btn-sm">Sair</button></div>
+        
     </div>
 
+        
+<div style="display: flex;gap: 10px;flex-wrap: wrap;padding-left: 40px;">
+            <button id="newTaskButton" class="btn-primary btn-sm" style="
+    padding-left: 16px;
+">+ Nova Tarefa</button>
+         </div>
+
+
+   
     <div class="task-list" id="taskList">
+        
         <h3 style="grid-column: 1 / -1; text-align: center;" id="loading-msg">Carregando tarefas...</h3>
     </div>
 
+
+    
     <div id="taskModal" class="modal">
         <div class="card modal-content">
             <h2 id="modalTitle">Criar Nova Tarefa</h2>
