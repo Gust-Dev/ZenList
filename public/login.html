@@ -3,30 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Projeto Integrador</title>
+    <title>Login - Aurum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Styles.css">
+    
+    <style>
+        /* Ajuste específico para centralizar e limitar o tamanho do card de login */
+        .auth-card {
+            width: 100%;
+            max-width: 400px; /* Não deixa ficar muito largo no PC */
+        }
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        .options-row a {
+            color: #2575fc;
+            text-decoration: none;
+        }
+        .options-row a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="card" style="width: 320px;">
-            <h2 style="text-align: center; color: white;">Acesso ao Sistema</h2>
-            <form id="loginForm">
-                <input type="email" name="email" placeholder="Email ID" required>
-                <input type="password" name="password" placeholder="Password" required>
+   <div class="auth-container">
+        
+        <h1 class="app-logo">ZenList</h1>
+        
+      
+        <div class="card auth-card"> 
+            <h2 style="text-align: center; margin-bottom: 30px;">Acesso ao Sistema</h2>
 
-                <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-top: -10px;">
-                    <label><input type="checkbox" name="remember"> Remember me</label>
-                    <a href="/forgot-password" class="link-secondary">Forgot Password?</a>
+            <form id="loginForm">
+                <input type="email" name="email" placeholder="Seu E-mail" required>
+                <input type="password" name="password" placeholder="Sua Senha" required>
+                
+                <div class="options-row">
+                    <label style="cursor: pointer;">
+                        <input type="checkbox" name="remember"> Lembrar de mim
+                    </label>
+                    <a href="#">Esqueci a senha?</a>
                 </div>
 
-                <button type="submit" class="btn-primary">LOGIN</button>
+                <button type="submit" class="btn-primary">ENTRAR</button>
             </form>
 
-            <p style="text-align: center; margin-top: 30px;" class="link-secondary">
-                Não tem uma conta? <a href="register.html">Crie uma agora</a>
-            </p>
+            <div class="task-footer" style="text-align: center; margin-top: 25px; font-size: 0.9em;">
+                <p>Não tem uma conta? <a href="register.html" style="color: #2575fc; font-weight: bold; text-decoration: none;">Crie uma agora</a></p>
+            </div>
         </div>
     </div>
-    <script src="login.js"></script>
-</body>
+
+    <script src="login.js"></script> </body>
 </html>
