@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -76,16 +77,33 @@ function requireLogin(req, res, next) {
 
 /* ------------------ Funções auxiliares ------------------ */
 function validateEmail(email) {
-    return /\S+@\S+\.\S+/.test(email);
+    return typeof email === 'string' && validator.isEmail(email);
+}
+
+// Sanitização mínima para evitar NoSQL injection via operadores ($ne, $gt, etc.)
+function ensureString(input, fieldName) {
+    if (typeof input !== 'string') {
+        throw new Error(`Campo inválido: ${fieldName}`);
+    }
+    return input;
+}
+
+function sanitizeString(str) {
+    // Escapa caracteres perigosos e normaliza espaços
+    return validator.escape(str).trim();
 }
 
 /* ------------------ Rotas ------------------ */
 
 // Registro
 app.post('/api/register', async (req, res) => {
-    const { email, password, full_name } = req.body;
+    let { email, password, full_name } = req.body;
 
-    if (!email || !password || password.length < 4) {
+    try {
+        email = sanitizeString(ensureString(email, 'email'));
+        password = ensureString(password, 'password');
+        full_name = full_name ? sanitizeString(ensureString(full_name, 'full_name')) : '';
+    } catch {
         return res.status(400).json({ success: false, message: "Dados inválidos." });
     }
 
@@ -99,7 +117,7 @@ app.post('/api/register', async (req, res) => {
         await db.collection('users').insertOne({
             email,
             password_hash,
-            full_name: full_name || "",
+            full_name,
             created_at: new Date()
         });
 
@@ -115,7 +133,14 @@ app.post('/api/register', async (req, res) => {
 
 // Login
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+
+    try {
+        email = sanitizeString(ensureString(email, 'email'));
+        password = ensureString(password, 'password');
+    } catch {
+        return res.status(400).json({ success: false, message: "Dados inválidos." });
+    }
 
     try {
         const user = await db.collection('users').findOne({ email });
@@ -165,7 +190,14 @@ app.get('/api/tasks', requireLogin, async (req, res) => {
 
 // Criar tarefa
 app.post('/api/tasks', requireLogin, async (req, res) => {
-    const { title, description } = req.body;
+    let { title, description } = req.body;
+
+    try {
+        title = sanitizeString(ensureString(title, 'title'));
+        description = description ? sanitizeString(ensureString(description, 'description')) : '';
+    } catch {
+        return res.status(400).json({ message: "Dados inválidos." });
+    }
 
     if (!title || title.length < 2) {
         return res.status(400).json({ message: "Título inválido." });
@@ -175,7 +207,7 @@ app.post('/api/tasks', requireLogin, async (req, res) => {
         const result = await db.collection('tasks').insertOne({
             user_id: req.userObjectId,
             title,
-            description: description || "",
+            description,
             status: "pending",
             created_at: new Date()
         });
@@ -219,7 +251,15 @@ app.put('/api/tasks/:id', requireLogin, async (req, res) => {
         return res.status(400).json({ message: "ID inválido." });
     }
 
-    const { title, description, status } = req.body;
+    let { title, description, status } = req.body;
+
+    try {
+        if (title !== undefined) title = sanitizeString(ensureString(title, 'title'));
+        if (description !== undefined) description = sanitizeString(ensureString(description, 'description'));
+        if (status !== undefined) status = sanitizeString(ensureString(status, 'status'));
+    } catch {
+        return res.status(400).json({ message: "Dados inválidos." });
+    }
 
     try {
         const result = await db.collection('tasks').updateOne(

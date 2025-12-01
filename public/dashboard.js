@@ -31,26 +31,64 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTaskCard(task) {
         const statusClass = task.status === 'completed' ? 'status-completed' : 'status-pending';
         const statusText = task.status === 'completed' ? 'CONCLUÍDA' : 'PENDENTE';
-        const completeButton = task.status === 'pending'
-            ? `<button class="task-complete" data-task-id="${task.id}">✓ Concluir</button>`
-            : `<span class="badge-completed">✔ Concluída</span>`;
 
-        return `
-            <div class="task-item card" data-task-id="${task.id}">
-                <div>
-                    <h3 style="margin-top: 0;">${task.title}</h3>
-                    <p style="opacity: 0.8;">${task.description || 'Sem descrição.'}</p>
-                </div>
-                <div class="task-footer">
-                    <p class="task-status ${statusClass}">Status: <strong>${statusText}</strong></p>
-                    <div class="task-actions">
-                        <button class="task-edit" data-task-id="${task.id}">Editar</button>
-                        ${completeButton}
-                        <button class="task-delete" data-task-id="${task.id}">Apagar</button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const card = document.createElement('div');
+        card.className = 'task-item card';
+        card.dataset.taskId = task.id;
+
+        const content = document.createElement('div');
+        const titleEl = document.createElement('h3');
+        titleEl.style.marginTop = '0';
+        titleEl.textContent = task.title;
+        const descEl = document.createElement('p');
+        descEl.style.opacity = '0.8';
+        descEl.textContent = task.description || 'Sem descrição.';
+        content.appendChild(titleEl);
+        content.appendChild(descEl);
+
+        const footer = document.createElement('div');
+        footer.className = 'task-footer';
+        const statusEl = document.createElement('p');
+        statusEl.className = `task-status ${statusClass}`;
+        const statusStrong = document.createElement('strong');
+        statusStrong.textContent = statusText;
+        statusEl.textContent = 'Status: ';
+        statusEl.appendChild(statusStrong);
+
+        const actions = document.createElement('div');
+        actions.className = 'task-actions';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'task-edit';
+        editBtn.dataset.taskId = task.id;
+        editBtn.textContent = 'Editar';
+
+        actions.appendChild(editBtn);
+        if (task.status === 'pending') {
+            const completeBtn = document.createElement('button');
+            completeBtn.className = 'task-complete';
+            completeBtn.dataset.taskId = task.id;
+            completeBtn.textContent = '✓ Concluir';
+            actions.appendChild(completeBtn);
+        } else {
+            const badge = document.createElement('span');
+            badge.className = 'badge-completed';
+            badge.textContent = '✔ Concluída';
+            actions.appendChild(badge);
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'task-delete';
+        deleteBtn.dataset.taskId = task.id;
+        deleteBtn.textContent = 'Apagar';
+        actions.appendChild(deleteBtn);
+
+        footer.appendChild(statusEl);
+        footer.appendChild(actions);
+
+        card.appendChild(content);
+        card.appendChild(footer);
+
+        return card.outerHTML;
     }
 
     async function fetchTasks() {
